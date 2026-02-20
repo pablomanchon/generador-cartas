@@ -10,33 +10,66 @@ type Props = {
   description: string;
 };
 
-export function CardPreview({ title, imageUrl, stats, cardRef, description }: Props) {
+export function CardPreview({
+  title,
+  imageUrl,
+  stats,
+  cardRef,
+  description,
+}: Props) {
   return (
-    <section className="rounded-2xl border border-foreground/15 bg-foreground/5 p-4">
+    <section
+      className="rounded-2xl border p-4"
+      style={{
+        borderColor: "rgba(0,0,0,0.15)",
+        backgroundColor: "rgba(0,0,0,0.05)",
+      }}
+    >
       <h2 className="mb-3 text-lg font-semibold">Preview</h2>
 
       <div className="flex flex-col items-start gap-3">
         {/* CARTA */}
         <div
+          id="card-export"
           ref={cardRef}
-          className="relative h-130 w-90 overflow-hidden rounded-2xl border-2 border-foreground/70 bg-black shadow-xl"
+          className="relative h-130 w-90 overflow-hidden rounded-2xl border-2 bg-black"
+          style={{
+            borderColor: "rgba(255,255,255,0.70)",
+            boxShadow: "0 18px 40px rgba(0,0,0,0.45)",
+          }}
         >
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageUrl}
               alt="card"
-              className="h-full w-full object-cover opacity-95"
+              className="h-full w-full object-cover"
+              style={{ opacity: 0.95 }}
             />
           ) : (
-            <div className="grid h-full w-full place-items-center text-sm text-white/70">
+            <div
+              className="grid h-full w-full place-items-center text-sm"
+              style={{ color: "rgba(255,255,255,0.70)" }}
+            >
               Subí una imagen
             </div>
           )}
 
           {/* Gradientes para legibilidad */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/35 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black/35 to-transparent" />
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-24"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.35), transparent)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.35), transparent)",
+            }}
+          />
 
           {/* Zona superior: stats TL/TR (solo enabled) */}
           <div className="absolute inset-x-0 top-0 h-20">
@@ -45,64 +78,82 @@ export function CardPreview({ title, imageUrl, stats, cardRef, description }: Pr
               .map((s) => (
                 <div
                   key={s.id}
+                  data-pill="1"
                   className={`absolute ${s.corner === "TL" ? "top-3 left-3" : "top-3 right-3"
-                    } rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur`}
-                  style={{ backgroundColor: `${s.bgColor}CC`, color: s.textColor }}
+                    } rounded-2xl border-2 border-black px-3 py-2 backdrop-blur`}
+                  style={{
+                    backgroundColor: `${s.bgColor}CC`,
+                    color: s.textColor,
+                    boxShadow:
+                      "inset 0 0 0 9999px rgba(0,0,0,0.12), inset 0 2px 10px rgba(0,0,0,0.55)",
+                  }}
                 >
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-medium opacity-90">{s.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium" style={{ opacity: 0.9 }}>
+                      {s.label}
+                    </span>
                     <span className="text-base font-semibold">{s.value}</span>
                   </div>
                 </div>
               ))}
           </div>
 
-          {/* ✅ Título centrado debajo de los stats de arriba */}
+          {/* Título centrado */}
           <div className="absolute left-3 right-3 top-4">
-            <div className="mx-auto w-fit max-w-full rounded-2xl bg-black/55 px-4 py-2 text-white backdrop-blur">
+            <div
+              data-pill="1"
+              className="mx-auto w-fit max-w-full rounded-2xl px-4 py-2 text-white backdrop-blur"
+              style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+            >
               <div className="max-w-[320px] truncate text-center text-sm font-semibold">
                 {title || "Sin título"}
               </div>
             </div>
           </div>
 
-          {/* Zona inferior: stats BL/BR (solo enabled) */}
-          <div className="absolute inset-x-0 bottom-3 flex flex-col items-center gap-2">
-
-            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-3">
-
-              {/* STATS */}
+          {/* Zona inferior: stats + descripción */}
+          <div className="absolute inset-x-0 bottom-3 px-3">
+            <div className="flex flex-col items-center gap-2">
+              {/* STATS BL/BR */}
               <div className="flex w-full justify-between">
                 {stats
                   .filter((s) => s.enabled && (s.corner === "BL" || s.corner === "BR"))
                   .map((s) => (
                     <div
                       key={s.id}
-                      className="rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur"
+                      data-pill="1"
+                      className="rounded-2xl border-2 border-black px-3 py-2 backdrop-blur"
                       style={{
                         backgroundColor: `${s.bgColor}CC`,
                         color: s.textColor,
+                        boxShadow:
+                          "inset 0 0 0 9999px rgba(0,0,0,0.12), inset 0 2px 10px rgba(0,0,0,0.55)",
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium opacity-90">
+                        <span className="text-xs font-medium" style={{ opacity: 0.9 }}>
                           {s.label}
                         </span>
-                        <span className="text-base font-semibold">
-                          {s.value}
-                        </span>
+                        <span className="text-base font-semibold">{s.value}</span>
                       </div>
                     </div>
                   ))}
               </div>
 
               {/* DESCRIPCIÓN */}
-              <div className="w-full rounded-2xl bg-black/55 px-4 py-2 text-white backdrop-blur border-2 border-black shadow-inner shadow-black">
-                <div className="text-center text-sm font-semibold wrap-break-word">
+              <div
+                data-pill="1"
+                className="w-full rounded-2xl border-2 border-black px-4 py-2 text-white backdrop-blur"
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.55)",
+                  boxShadow:
+                    "inset 0 0 0 9999px rgba(0,0,0,0.12), inset 0 2px 10px rgba(0,0,0,0.55)",
+                }}
+              >
+                <div className="desc-text text-center text-sm font-semibold whitespace-pre-wrap wrap-break-word leading-snug">
                   {description || "Sin descripción"}
                 </div>
               </div>
-
             </div>
           </div>
         </div>

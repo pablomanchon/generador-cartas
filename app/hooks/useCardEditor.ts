@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Stat } from "../components/card/types";
 
 const DEFAULT_STATS: Stat[] = [
@@ -12,12 +12,11 @@ const DEFAULT_STATS: Stat[] = [
 
 export function useCardEditor() {
   const [title, setTitle] = useState("Mi Carta");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null); // ahora va a ser dataURL
   const [stats, setStats] = useState<Stat[]>(DEFAULT_STATS);
   const [description, setDescription] = useState<string>("");
 
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
 
   const usedCorners = useMemo(() => new Set(stats.map((s) => s.corner)), [stats]);
 
@@ -28,19 +27,16 @@ export function useCardEditor() {
   const onPickImage = useCallback((file?: File | null) => {
     if (!file) return;
 
-    // liberamos el anterior para evitar leaks
-    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-
-    const url = URL.createObjectURL(file);
-    objectUrlRef.current = url;
-    setImageUrl(url);
-  }, []);
-
-  // cleanup al desmontar
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : null;
+      setImageUrl(result);
     };
+    reader.onerror = () => {
+      console.error("FileReader error:", reader.error);
+      setImageUrl(null);
+    };
+    reader.readAsDataURL(file); // ✅ data:image/...;base64,...
   }, []);
 
   return {

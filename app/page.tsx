@@ -2,8 +2,8 @@
 
 import { CardEditor } from "./components/card/CardEditor";
 import { CardPreview } from "./components/card/CardPreview";
+import { ExportCardPngButton } from "./components/card/ExportCardPngButton";
 import { useCardEditor } from "./hooks/useCardEditor";
-
 
 export default function Page() {
   const {
@@ -16,7 +16,7 @@ export default function Page() {
     usedCorners,
     cardRef,
     description,
-    setDescription
+    setDescription,
   } = useCardEditor();
 
   return (
@@ -43,7 +43,24 @@ export default function Page() {
             setDescription={setDescription}
           />
 
-          <CardPreview title={title} imageUrl={imageUrl} stats={stats} cardRef={cardRef} description={description} />
+          {/* Columna derecha */}
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-end">
+              <ExportCardPngButton
+                cardRef={cardRef}
+                title={title}
+                pixelRatio={2}
+              />
+            </div>
+
+            <CardPreview
+              title={title}
+              imageUrl={imageUrl}
+              stats={stats}
+              cardRef={cardRef}
+              description={description}
+            />
+          </div>
         </div>
       </div>
     </main>
