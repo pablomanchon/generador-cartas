@@ -5,6 +5,7 @@ export type Stat = {
   label: string;
   value: string;
   corner: Corner;
+  description: string;
   bgColor: string;
   textColor: string;
   enabled: boolean; // ✅ nuevo

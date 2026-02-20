@@ -4,16 +4,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stat } from "../components/card/types";
 
 const DEFAULT_STATS: Stat[] = [
-  { id: "1", label: "ATK", value: "80", corner: "TL", bgColor: "#000000", textColor: "#ffffff", enabled: true },
-  { id: "2", label: "DEF", value: "60", corner: "TR", bgColor: "#000000", textColor: "#ffffff", enabled: true },
-  { id: "3", label: "SPD", value: "40", corner: "BL", bgColor: "#000000", textColor: "#ffffff", enabled: true },
-  { id: "4", label: "HP", value: "100", corner: "BR", bgColor: "#000000", textColor: "#ffffff", enabled: true },
+  { id: "1", label: "ATK", value: "80", corner: "TL", bgColor: "#000000", textColor: "#ffffff", description: "", enabled: true },
+  { id: "2", label: "DEF", value: "60", corner: "TR", bgColor: "#000000", textColor: "#ffffff", description: "", enabled: true },
+  { id: "3", label: "SPD", value: "40", corner: "BL", bgColor: "#000000", textColor: "#ffffff", description: "", enabled: true },
+  { id: "4", label: "HP", value: "100", corner: "BR", bgColor: "#000000", textColor: "#ffffff", description: "", enabled: true },
 ];
 
 export function useCardEditor() {
   const [title, setTitle] = useState("Mi Carta");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [stats, setStats] = useState<Stat[]>(DEFAULT_STATS);
+  const [description, setDescription] = useState<string>("");
 
   const cardRef = useRef<HTMLDivElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -52,5 +53,7 @@ export function useCardEditor() {
     updateStat,
     usedCorners,
     cardRef,
+    description,
+    setDescription,
   };
 }

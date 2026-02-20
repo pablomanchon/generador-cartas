@@ -7,9 +7,10 @@ type Props = {
   imageUrl: string | null;
   stats: Stat[];
   cardRef: React.RefObject<HTMLDivElement | null>;
+  description: string;
 };
 
-export function CardPreview({ title, imageUrl, stats, cardRef }: Props) {
+export function CardPreview({ title, imageUrl, stats, cardRef, description }: Props) {
   return (
     <section className="rounded-2xl border border-foreground/15 bg-foreground/5 p-4">
       <h2 className="mb-3 text-lg font-semibold">Preview</h2>
@@ -44,13 +45,12 @@ export function CardPreview({ title, imageUrl, stats, cardRef }: Props) {
               .map((s) => (
                 <div
                   key={s.id}
-                  className={`absolute ${
-                    s.corner === "TL" ? "top-3 left-3" : "top-3 right-3"
-                  } rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur`}
+                  className={`absolute ${s.corner === "TL" ? "top-3 left-3" : "top-3 right-3"
+                    } rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur`}
                   style={{ backgroundColor: `${s.bgColor}CC`, color: s.textColor }}
                 >
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[11px] font-medium opacity-90">{s.label}</span>
+                    <span className="text-xs font-medium opacity-90">{s.label}</span>
                     <span className="text-base font-semibold">{s.value}</span>
                   </div>
                 </div>
@@ -67,31 +67,44 @@ export function CardPreview({ title, imageUrl, stats, cardRef }: Props) {
           </div>
 
           {/* Zona inferior: stats BL/BR (solo enabled) */}
-          <div className="absolute inset-x-0 bottom-0 h-24">
-            {stats
-              .filter((s) => s.enabled && (s.corner === "BL" || s.corner === "BR"))
-              .map((s) => (
-                <div
-                  key={s.id}
-                  className={`absolute ${
-                    s.corner === "BL" ? "bottom-3 left-3" : "bottom-3 right-3"
-                  } rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur`}
-                  style={{ backgroundColor: `${s.bgColor}CC`, color: s.textColor }}
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[11px] font-medium opacity-90">{s.label}</span>
-                    <span className="text-base font-semibold">{s.value}</span>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
+          <div className="absolute inset-x-0 bottom-3 flex flex-col items-center gap-2">
 
-        {/* DESCRIPCIÓN DEBAJO */}
-        <div className="w-90 rounded-2xl border border-foreground/15 bg-foreground/5 p-3">
-          <p className="text-sm leading-relaxed opacity-90">
-            Esta es la descripción de la carta. Podés poner lore, habilidad, etc.
-          </p>
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-3">
+
+              {/* STATS */}
+              <div className="flex w-full justify-between">
+                {stats
+                  .filter((s) => s.enabled && (s.corner === "BL" || s.corner === "BR"))
+                  .map((s) => (
+                    <div
+                      key={s.id}
+                      className="rounded-2xl border-2 border-black px-3 py-2 shadow-inner shadow-black backdrop-blur"
+                      style={{
+                        backgroundColor: `${s.bgColor}CC`,
+                        color: s.textColor,
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium opacity-90">
+                          {s.label}
+                        </span>
+                        <span className="text-base font-semibold">
+                          {s.value}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* DESCRIPCIÓN */}
+              <div className="w-full rounded-2xl bg-black/55 px-4 py-2 text-white backdrop-blur border-2 border-black shadow-inner shadow-black">
+                <div className="text-center text-sm font-semibold wrap-break-word">
+                  {description || "Sin descripción"}
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </section>

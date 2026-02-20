@@ -10,6 +10,8 @@ type Props = {
   stats: Stat[];
   usedCorners: Set<string>;
   updateStat: (id: string, patch: Partial<Stat>) => void;
+  description: string;
+  setDescription: (v: string) => void;
 };
 
 export function CardEditor({
@@ -19,6 +21,8 @@ export function CardEditor({
   stats,
   usedCorners,
   updateStat,
+  description,
+  setDescription
 }: Props) {
   return (
     <section className="rounded-2xl border border-foreground/15 bg-foreground/5 p-4">
@@ -29,6 +33,14 @@ export function CardEditor({
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          className="w-full rounded-xl border border-foreground/20 bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-foreground/20"
+        />
+      </label>
+      <label className="mb-3 block">
+        <span className="mb-1 block text-sm opacity-80">Descripción</span>
+        <input
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-xl border border-foreground/20 bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-foreground/20"
         />
       </label>
@@ -55,6 +67,7 @@ export function CardEditor({
           ))}
         </div>
       </div>
+
     </section>
   );
 }

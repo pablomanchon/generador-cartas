@@ -15,6 +15,8 @@ export default function Page() {
     updateStat,
     usedCorners,
     cardRef,
+    description,
+    setDescription
   } = useCardEditor();
 
   return (
@@ -37,9 +39,11 @@ export default function Page() {
             stats={stats}
             usedCorners={usedCorners}
             updateStat={updateStat}
+            description={description}
+            setDescription={setDescription}
           />
 
-          <CardPreview title={title} imageUrl={imageUrl} stats={stats} cardRef={cardRef} />
+          <CardPreview title={title} imageUrl={imageUrl} stats={stats} cardRef={cardRef} description={description} />
         </div>
       </div>
     </main>
