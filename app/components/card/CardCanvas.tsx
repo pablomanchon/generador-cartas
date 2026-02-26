@@ -1,5 +1,4 @@
 "use client";
-
 import type { Stat } from "./types";
 
 type Props = {
@@ -8,6 +7,7 @@ type Props = {
   stats: Stat[];
   description: string;
   modelId?: string;
+  cardRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export function CardCanvas({
@@ -16,9 +16,11 @@ export function CardCanvas({
   stats,
   description,
   modelId,
+  cardRef,
 }: Props) {
   return (
     <div
+      ref={cardRef}
       id="card-export"
       data-model-id={modelId ?? ""}
       className="relative isolate h-130 w-90 overflow-hidden rounded-2xl border-2 bg-black shadow-xl"
@@ -65,9 +67,8 @@ export function CardCanvas({
             <div
               key={s.id}
               data-pill="1"
-              className={`absolute ${
-                s.corner === "TL" ? "top-3 left-3" : "top-3 right-3"
-              } rounded-2xl border-2 border-black px-3 py-2 backdrop-blur`}
+              className={`absolute ${s.corner === "TL" ? "top-3 left-3" : "top-3 right-3"
+                } rounded-2xl border-2 border-black px-3 py-2 backdrop-blur`}
               style={{
                 backgroundColor: `${s.bgColor}CC`,
                 color: s.textColor,
@@ -141,7 +142,6 @@ export function CardCanvas({
           </div>
         </div>
       </div>
-
     </div>
   );
 }

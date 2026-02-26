@@ -8,9 +8,10 @@ type Props = {
   imageUrl: string | null;
   stats: Stat[];
   description: string;
+  cardRef?: React.RefObject<HTMLDivElement | null>;
 };
 
-export function CardPreview({ title, imageUrl, stats, description }: Props) {
+export function CardPreview({ title, imageUrl, stats, description,cardRef }: Props) {
   return (
     <section
       className="rounded-2xl border p-4"
@@ -22,6 +23,7 @@ export function CardPreview({ title, imageUrl, stats, description }: Props) {
       <h2 className="mb-3 text-lg font-semibold text-center">Preview</h2>
 
         <CardCanvas
+        cardRef={cardRef}
           title={title}
           imageUrl={imageUrl}
           stats={stats}

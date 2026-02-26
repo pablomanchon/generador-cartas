@@ -3,7 +3,8 @@
 import { CardEditor } from "./components/card/CardEditor";
 import { CardPreview } from "./components/card/CardPreview";
 import { ExportCardPngButton } from "./components/card/ExportCardPngButton";
-import { Gallery } from "./components/card/Gallery";
+import { Gallery } from "./components/Gallery";
+import { ExportCardPuppeteerButton } from "./components/ExportCardBtn";
 import { useCardEditor } from "./hooks/useCardEditor";
 
 export default function Page() {
@@ -50,6 +51,7 @@ export default function Page() {
           <div className="flex flex-col gap-3">
             <div className="flex justify-center gap-2">
               <CardPreview
+                cardRef={cardRef}
                 title={title}
                 imageUrl={imageUrl}
                 stats={stats}
@@ -64,8 +66,8 @@ export default function Page() {
               >
                 Guardar en galería
               </button>
+              {cardRef && <ExportCardPuppeteerButton cardRef={cardRef} fileName={title || "prueba"} modelId={title || "prueba"} />}
 
-              <ExportCardPngButton cardRef={cardRef} title={title} pixelRatio={2} />
             </div>
           </div>
         </div>
