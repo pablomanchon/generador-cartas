@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium-min";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type Body = {
   html: string; // debe contener #card-export
@@ -26,7 +28,6 @@ function wrapHtml(inner: string) {
       .h-130 { height: 32.5rem; } /* 130 * 0.25rem */
       .w-90  { width: 22.5rem; }  /* 90  * 0.25rem */
 
-      /* (opcional) para centrar y que no quede pegado a la esquina */
       body { display: grid; place-items: center; min-height: 100vh; }
     </style>
   </head>
@@ -57,8 +58,9 @@ export async function POST(req: Request) {
   const transparent = Boolean(body.transparent ?? false);
 
   const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(), // 👈 clave en Vercel
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   try {
@@ -70,7 +72,7 @@ export async function POST(req: Request) {
       timeout: 30_000,
     });
 
-    // ✅ esperar fuentes (si hay fonts web)
+    // ✅ esperar fuentes
     await page.evaluate(async () => {
       // @ts-ignore
       if (document.fonts?.ready) {
@@ -80,9 +82,10 @@ export async function POST(req: Request) {
     });
 
     // ✅ esperar imágenes reales dentro de #card-export
-    // (no depende de React, funciona con HTML plano)
     await page.waitForFunction(() => {
-      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>("#card-export img"));
+      const imgs = Array.from(
+        document.querySelectorAll<HTMLImageElement>("#card-export img")
+      );
       if (imgs.length === 0) return true;
       return imgs.every((img) => img.complete && img.naturalWidth > 0);
     }, { timeout: 30_000 });
