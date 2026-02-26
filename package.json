@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@sparticuz/chromium-min": "^143.0.4",
+    "@sparticuz/chromium": "^143.0.4",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
