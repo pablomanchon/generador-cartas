@@ -39,11 +39,11 @@ async function launchBrowser() {
     const puppeteer = (await import("puppeteer-core")).default;
     const chromium = (await import("@sparticuz/chromium")).default;
 
-    const brotliPath = `${process.cwd()}/.vercel/output/static/chromium-brotli`;
+    const brotliPath = `${process.cwd()}/chromium-brotli`;
     const executablePath = await chromium.executablePath(brotliPath);
 
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
       executablePath,
       headless: true,
     });

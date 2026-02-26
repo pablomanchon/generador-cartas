@@ -2,9 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const src = path.join(process.cwd(), "node_modules", "@sparticuz", "chromium", "bin");
-
-// ✅ esta carpeta SIEMPRE queda en el deploy
-const dest = path.join(process.cwd(), ".vercel", "output", "static", "chromium-brotli");
+const dest = path.join(process.cwd(), "chromium-brotli"); // ✅ carpeta del repo (runtime bundleable)
 
 function copyDirSync(from, to) {
   fs.mkdirSync(to, { recursive: true });
