@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/copy-chromium-brotli.mjs"
+    "vercel-build": "node scripts/copy-chromium-brotli.mjs && next build"
   },
   "dependencies": {
     "@sparticuz/chromium": "^143.0.4",
