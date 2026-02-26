@@ -3,6 +3,7 @@
 import { CardEditor } from "./components/card/CardEditor";
 import { CardPreview } from "./components/card/CardPreview";
 import { ExportCardPngButton } from "./components/card/ExportCardPngButton";
+import { Gallery } from "./components/card/Gallery";
 import { useCardEditor } from "./hooks/useCardEditor";
 
 export default function Page() {
@@ -17,6 +18,10 @@ export default function Page() {
     cardRef,
     description,
     setDescription,
+    gallery,
+    saveToGallery,
+    loadFromGallery,
+    deleteFromGallery,
   } = useCardEditor();
 
   return (
@@ -30,7 +35,6 @@ export default function Page() {
             </p>
           </div>
         </div>
-
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
           <CardEditor
             title={title}
@@ -43,25 +47,35 @@ export default function Page() {
             setDescription={setDescription}
           />
 
-          {/* Columna derecha */}
           <div className="flex flex-col gap-3">
-            <div className="flex justify-end">
-              <ExportCardPngButton
-                cardRef={cardRef}
+            <div className="flex justify-center gap-2">
+              <CardPreview
                 title={title}
-                pixelRatio={2}
+                imageUrl={imageUrl}
+                stats={stats}
+                cardRef={cardRef}
+                description={description}
               />
             </div>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={saveToGallery}
+                className="w-fit rounded-xl border border-black/20 bg-black/10 px-4 py-2 text-sm font-medium hover:bg-black/15 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15"
+              >
+                Guardar en galería
+              </button>
 
-            <CardPreview
-              title={title}
-              imageUrl={imageUrl}
-              stats={stats}
-              cardRef={cardRef}
-              description={description}
-            />
+              <ExportCardPngButton cardRef={cardRef} title={title} pixelRatio={2} />
+            </div>
           </div>
         </div>
+
+        <Gallery
+          items={gallery}
+          onLoad={loadFromGallery}
+          onDelete={deleteFromGallery}
+        />
       </div>
     </main>
   );

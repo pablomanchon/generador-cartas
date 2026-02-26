@@ -7,6 +7,12 @@ type ExportOptions = {
   fileName?: string;
   pixelRatio?: number;
   backgroundColor?: string;
+
+  // ✅ NUEVO
+  download?: boolean;                 // default true
+  format?: "png" | "jpeg";            // default "png"
+  quality?: number;                   // default 0.95 (jpeg)
+  mode?: "normal" | "print";          // ✅ normal aplica micro-ajustes; print NO
 };
 
 function safeFileName(name: string) {
@@ -38,11 +44,14 @@ export function useExportCardPng(
         return;
       }
 
+      const mode = opts?.mode ?? "normal";
+      const format = opts?.format ?? "png";
+      const shouldDownload = opts?.download ?? true;
+
       try {
         setIsExporting(true);
         setError(null);
 
-        // ✅ esperar fuentes
         if ("fonts" in document) {
           // @ts-ignore
           await document.fonts.ready;
@@ -53,62 +62,70 @@ export function useExportCardPng(
           useCORS: true,
           backgroundColor: opts?.backgroundColor ?? null,
           logging: false,
-
           onclone: (clonedDoc) => {
             const root = clonedDoc.getElementById("card-export") as HTMLElement | null;
             if (!root) return;
 
-            // 1) Apagar cosas problemáticas (como ya venías haciendo)
+            // ✅ Apagar SOLO lo conflictivo
             const all = [root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))];
             for (const el of all) {
               (el.style as any).backdropFilter = "none";
               (el.style as any).webkitBackdropFilter = "none";
-              el.style.boxShadow = "none";
-              el.style.textShadow = "none";
-              el.style.outline = "none";
+              // podés dejar sombras si querés, pero si te dan problemas:
+              // el.style.boxShadow = "none";
             }
 
-            // 2) Forzar fuente consistente en el clon (clave)
-            // Usá la misma que ves en pantalla. Si estás con Geist, dejalo así:
+            // Fuente consistente
             root.style.fontFamily =
               'var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif';
 
-            // 3) Micro-ajuste vertical SOLO para textos en pills
-            // Esto corrige el baseline que html2canvas dibuja más abajo.
-            const pillTexts = root.querySelectorAll<HTMLElement>(
-              '[data-pill="1"] span, [data-pill="1"] div, [data-pill="1"] p'
-            );
+            // ✅ SOLO en modo normal (si todavía querés esos parches)
+            if (mode === "normal") {
+              const pillTexts = root.querySelectorAll<HTMLElement>(
+                '[data-pill="1"] span, [data-pill="1"] div, [data-pill="1"] p'
+              );
+              pillTexts.forEach((el) => {
+                el.style.transform = "translateY(-3px)";
+              });
 
-            pillTexts.forEach((el) => {
-              // No toco posiciones, solo el “dibujo” del texto
-              el.style.transform = "translateY(-3px)";
-            });
+              const titleText = root.querySelector<HTMLElement>('[data-pill="1"] .truncate');
+              if (titleText) {
+                titleText.style.lineHeight = "2.2";
+                titleText.style.transform = "translateY(-5px)";
+              }
 
-            const titleText = root.querySelector<HTMLElement>('[data-pill="1"] .truncate');
-            if (titleText) {
-              titleText.style.lineHeight = "2.2";
-              titleText.style.transform = "translateY(-5px)";
+              const descText = root.querySelector<HTMLElement>(".desc-text");
+              if (descText) {
+                descText.style.transform = "translateY(-8px)";
+              }
             }
 
-            const descText = root.querySelector<HTMLElement>(".desc-text");
-            if (descText) {
-              // Ajuste fino: probá -3px / -4px según lo que veas
-              descText.style.transform = "translateY(-8px)";
-              // opcional: si te queda “alto” o raro
-              // descText.style.lineHeight = "1.15";
+            // ✅ EN PRINT: asegurá que NO haya transforms raros heredados
+            if (mode === "print") {
+              const texts = root.querySelectorAll<HTMLElement>("[data-pill='1'] *");
+              texts.forEach((el) => {
+                if (el.style.transform) el.style.transform = "none";
+              });
             }
-          }
+          },
         });
 
-        const dataUrl = canvas.toDataURL("image/png");
-        const fileName = safeFileName(opts?.fileName ?? defaultName) + ".png";
+        const dataUrl =
+          format === "jpeg"
+            ? canvas.toDataURL("image/jpeg", opts?.quality ?? 0.95)
+            : canvas.toDataURL("image/png");
 
-        const a = document.createElement("a");
-        a.href = dataUrl;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        if (shouldDownload) {
+          const ext = format === "jpeg" ? "jpg" : "png";
+          const fileName = safeFileName(opts?.fileName ?? defaultName) + "." + ext;
+
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
 
         return dataUrl;
       } catch (e: any) {

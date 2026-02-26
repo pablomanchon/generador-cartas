@@ -11,6 +11,15 @@ export type Stat = {
   enabled: boolean; // ✅ nuevo
 };
 
+export type CardModel = {
+  id: string;
+  title: string;
+  imageKey: string | null; // ✅ antes era imageUrl
+  description: string;
+  stats: Stat[];
+  createdAt: number;
+};
+
 export const cornerClass: Record<Corner, string> = {
   TL: "top-3 left-3",
   TR: "top-3 right-3",
