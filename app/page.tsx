@@ -53,7 +53,6 @@ export default function Page() {
                 title={title}
                 imageUrl={imageUrl}
                 stats={stats}
-                cardRef={cardRef}
                 description={description}
               />
             </div>
