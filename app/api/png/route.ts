@@ -39,7 +39,8 @@ async function launchBrowser() {
     const puppeteer = (await import("puppeteer-core")).default;
     const chromium = (await import("@sparticuz/chromium")).default;
 
-    const executablePath = await chromium.executablePath();
+    const brotliPath = `${process.cwd()}/chromium-brotli`;
+    const executablePath = await chromium.executablePath(brotliPath);
 
     return puppeteer.launch({
       args: chromium.args,

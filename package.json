@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "node scripts/copy-chromium-brotli.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium": "^143.0.4",
