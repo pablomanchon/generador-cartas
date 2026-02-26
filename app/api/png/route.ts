@@ -37,7 +37,7 @@ async function launchBrowser() {
   // En Vercel: puppeteer-core + chromium-min
   if (process.env.VERCEL) {
     const puppeteer = (await import("puppeteer-core")).default;
-    const chromium = (await import("@sparticuz/chromium-min")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
 
     const executablePath = await chromium.executablePath();
 
