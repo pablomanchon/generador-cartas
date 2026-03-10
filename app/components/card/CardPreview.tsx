@@ -14,7 +14,7 @@ type Props = {
 export function CardPreview({ title, imageUrl, stats, description,cardRef }: Props) {
   return (
     <section
-      className="rounded-2xl border p-4"
+      className="border p-4"
       style={{
         borderColor: "rgba(0,0,0,0.15)",
         backgroundColor: "rgba(0,0,0,0.05)",

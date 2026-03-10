@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { setExportDataUrl } from "../storage/exportCache";
+import { setExportBlob } from "../storage/exportCache";
 
 type Props = {
   cardRef: React.RefObject<HTMLDivElement | null>;
   fileName?: string;
-  modelId: string; // 👈 clave para guardar
+  modelId: string;
 };
 
 function safeFileName(name: string) {
@@ -86,11 +86,10 @@ export function ExportCardPuppeteerButton({ cardRef, fileName, modelId }: Props)
 
       const blob = await res.blob();
 
-      // ✅ 1) Guardar en localStorage como dataURL
-      const dataUrl = await blobToDataUrl(blob);
-      setExportDataUrl(modelId, dataUrl);
+      // ✅ guardar en IndexedDB como Blob
+      await setExportBlob(modelId, blob);
 
-      // ✅ 2) (Opcional) descargar también
+      // ✅ opcional: descargar también
       await downloadBlob(blob, `${safeFileName(fileName ?? "carta")}.png`);
     } catch (e) {
       console.error(e);

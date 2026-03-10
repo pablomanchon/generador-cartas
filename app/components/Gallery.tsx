@@ -6,7 +6,7 @@ import type { CardModel } from "./card/types";
 import { CardCanvas } from "./card/CardCanvas";
 import { getImage, blobToDataURL } from "./card/imageStore";
 import { HiddenCardRenderer } from "./card/HiddenCardRenderer";
-import { getExportDataUrl, setExportDataUrl } from "../storage/exportCache";
+import { getExportDataUrl, setExportBlob } from "../storage/exportCache";
 
 type Props = {
   items: CardModel[];
@@ -48,10 +48,8 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
   const [isBuildingPdf, setIsBuildingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
-  // ✅ objectURLs SOLO para mostrar miniaturas
   const [thumbUrlById, setThumbUrlById] = useState<Record<string, string>>({});
 
-  // ✅ renderer oculto (solo para obtener HTML final)
   const [currentModel, setCurrentModel] = useState<CardModel | null>(null);
   const [currentExportImageUrl, setCurrentExportImageUrl] = useState<string | null>(
     null
@@ -67,7 +65,6 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
     window.open("/print", "_blank");
   }
 
-  // ====== Cache de miniaturas (objectURL) ======
   useEffect(() => {
     let alive = true;
 
@@ -89,7 +86,6 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
         next[m.id] = URL.createObjectURL(blob);
       }
 
-      // revocar las que ya no están (pero NO durante PDF)
       if (!isBuildingPdf) {
         for (const id of Object.keys(prev)) {
           if (!next[id]) URL.revokeObjectURL(prev[id]);
@@ -122,19 +118,16 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
 
   const total = useMemo(() => picks.reduce((acc, p) => acc + p.qty, 0), [picks]);
 
-  // ✅ Genera (si falta) y guarda en localStorage usando tu backend Puppeteer
   async function ensureExport(model: CardModel) {
-    const cached = getExportDataUrl(model.id);
+    const cached = await getExportDataUrl(model.id);
     if (cached) return cached;
 
-    // 1) convertir la imagen del modelo a dataURL (evita blob: en puppeteer)
     let exportUrl: string | null = null;
     if (model.imageKey) {
       const blob = await getImage(model.imageKey);
       if (blob) exportUrl = await blobToDataURL(blob);
     }
 
-    // 2) render oculto para obtener HTML
     setCurrentModel(model);
     setCurrentExportImageUrl(exportUrl);
 
@@ -147,14 +140,13 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
 
     const html = node.outerHTML;
 
-    // 3) backend puppeteer
     const res = await fetch("/api/png", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         html,
         width: 1000,
-        height: 1600,
+        height: 1680,
         deviceScaleFactor: 2,
         transparent: false,
       }),
@@ -164,11 +156,9 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
 
     const pngBlob = await res.blob();
 
-    // 4) guardar como dataURL
-    const dataUrl = await blobToDataURL(pngBlob);
-    setExportDataUrl(model.id, dataUrl);
+    await setExportBlob(model.id, pngBlob);
 
-    return dataUrl;
+    return await blobToDataURL(pngBlob);
   }
 
   async function handleGeneratePdf() {
@@ -181,36 +171,33 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
         return;
       }
 
-      // ✅ Asegurar 1 export por modelo (NO por repetición)
       const uniqueModels = Array.from(
         new Map(picks.map((p) => [p.model.id, p.model])).values()
       );
 
+      const exportMap = new Map<string, string>();
+
       for (const model of uniqueModels) {
-        await ensureExport(model);
+        const dataUrl = await ensureExport(model);
+        exportMap.set(model.id, dataUrl);
       }
 
-      // Config impresión
       const cardWidthMm = 63;
-      const cardHeightMm = 88;
-      const gapMm = 4;
+      const cardHeightMm = 94;
+      const gapMm = 2;
       const marginMm = 5;
       const cropMarks = true;
       const cropMarkLenMm = 3;
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-      const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-
-      const usableW = pageW - marginMm * 2;
       const usableH = pageH - marginMm * 2;
 
       const cols = 3;
       const rows = Math.max(1, Math.floor((usableH + gapMm) / (cardHeightMm + gapMm)));
       const perPage = cols * rows;
 
-      // Expandir cola con repeticiones
       const queue: CardModel[] = [];
       for (const p of picks) {
         for (let i = 0; i < p.qty; i++) queue.push(p.model);
@@ -225,9 +212,11 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
         for (let slot = 0; slot < perPage && idx < queue.length; slot++, idx++) {
           const model = queue[idx];
 
-          const imgData = getExportDataUrl(model.id);
+          const imgData = exportMap.get(model.id) ?? (await getExportDataUrl(model.id));
           if (!imgData) {
-            throw new Error(`No se encontró el export cacheado de "${model.title || model.id}".`);
+            throw new Error(
+              `No se encontró el export cacheado de "${model.title || model.id}".`
+            );
           }
 
           const r = Math.floor(slot / cols);
@@ -258,7 +247,6 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
 
   return (
     <section className="mt-8 rounded-2xl border border-foreground/15 bg-foreground/5 p-4">
-      {/* ✅ Renderer oculto (solo para HTML -> backend) */}
       {currentModel ? (
         <HiddenCardRenderer
           model={currentModel}
@@ -307,7 +295,10 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
             const thumbUrl = thumbUrlById[m.id] ?? null;
 
             return (
-              <div key={m.id} className="rounded-2xl border border-foreground/15 bg-background p-3 w-87">
+              <div
+                key={m.id}
+                className="rounded-2xl border border-foreground/15 bg-background p-3 w-87"
+              >
                 <div className="overflow-hidden rounded-2xl border border-foreground/15 bg-black">
                   <div className="scale-75 flex items-center">
                     <CardCanvas
@@ -336,8 +327,12 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
 
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold">{m.title || "Sin título"}</div>
-                    <div className="text-xs opacity-70">{new Date(m.createdAt).toLocaleString()}</div>
+                    <div className="truncate text-sm font-semibold">
+                      {m.title || "Sin título"}
+                    </div>
+                    <div className="text-xs opacity-70">
+                      {new Date(m.createdAt).toLocaleString()}
+                    </div>
                   </div>
 
                   <div className="flex gap-2">
@@ -373,14 +368,16 @@ export function Gallery({ items, onLoad, onDelete }: Props) {
                     className="flex-1 rounded-xl border border-foreground/20 bg-foreground/5 px-3 py-2 text-xs hover:bg-foreground/10 disabled:opacity-50"
                     disabled={qty <= 0}
                     onClick={() =>
-                      setQtyById((prev) => ({ ...prev, [m.id]: Math.max(0, (prev[m.id] ?? 0) - 1) }))
+                      setQtyById((prev) => ({
+                        ...prev,
+                        [m.id]: Math.max(0, (prev[m.id] ?? 0) - 1),
+                      }))
                     }
                   >
                     -1
                   </button>
                 </div>
 
-                {/* opcional: export manual para cachear una sola carta */}
                 <button
                   type="button"
                   className="mt-3 w-full rounded-xl border border-foreground/20 bg-foreground/5 px-3 py-2 text-xs hover:bg-foreground/10"

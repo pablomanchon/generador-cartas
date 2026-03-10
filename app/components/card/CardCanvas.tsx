@@ -23,7 +23,7 @@ export function CardCanvas({
       ref={cardRef}
       id="card-export"
       data-model-id={modelId ?? ""}
-      className="relative isolate h-130 w-90 overflow-hidden rounded-2xl border-2 bg-black shadow-xl"
+      className="relative isolate h-130 w-90 overflow-hidden border-2 bg-black shadow-xl"
       style={{ borderColor: "rgba(255,255,255,0.70)" }}
     >
       {/* ✅ Imagen SIEMPRE al fondo */}
